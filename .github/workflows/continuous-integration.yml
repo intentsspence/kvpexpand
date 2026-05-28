@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: intermediate-coverage-${{ matrix.python-version }}
-          path: .coverage.${{ matrix.python-version }}
+          path: .coverage.py${{ matrix.python-version }}
           retention-days: 1
           if-no-files-found: error
           include-hidden-files: true
