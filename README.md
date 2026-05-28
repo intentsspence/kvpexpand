@@ -1,3 +1,5 @@
+[![CI](https://github.com/intentsspence/kvpexpand/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/intentsspence/kvpexpand/actions/workflows/continuous-integration.yml)
+
 # kvpexpand
 Python library to expand nested key-value-pairs with extended configuration to parse complex strings.
 
