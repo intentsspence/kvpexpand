@@ -181,6 +181,8 @@ dmypy.json
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
-
 # PyPI configuration file
 .pypirc
+
+#Mac .DS_Store files
+.DS_Store
