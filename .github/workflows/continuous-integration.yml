@@ -93,7 +93,7 @@ jobs:
       - name: Check for coverage file
         run: |
           ls -la
-          ls -l .coverage.${{ matrix.python-version }}
+          ls -l .coverage.py${{ matrix.python-version }}
 
       - name: Upload code coverage results
         uses: actions/upload-artifact@v6
