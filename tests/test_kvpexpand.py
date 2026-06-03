@@ -29,12 +29,39 @@ class TestKVPExpander(unittest.TestCase):
 
     def test_expand_key_value_pair_with_no_match(self):
         result = self.kvpexpander.expand_key_value_pair(self.key, "sub_key3:sub_value3")
-        expected = {}
+        expected = {self.key: "sub_key3:sub_value3"}
         self.assertEqual(result, expected)
 
     def test_expand_key_value_pair_with_non_string_value(self):
         result = self.kvpexpander.expand_key_value_pair(self.key, 123)
+        expected = {self.key: 123}
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pair_with_return_atomic_kvp_false_and_no_match(self):
+        kvpexpander = kvpexpand.KVPExpander(return_atomic_kvp=False)
+        result = kvpexpander.expand_key_value_pair(self.key, "sub_key3:sub_value3")
         expected = {}
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pair_with_return_atomic_kvp_false_and_non_string_value(
+        self,
+    ):
+        kvpexpander = kvpexpand.KVPExpander(return_atomic_kvp=False)
+        result = kvpexpander.expand_key_value_pair(self.key, 123)
+        expected = {}
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pairs_with_return_atomic_kvp_false(self):
+        kvpexpander = kvpexpand.KVPExpander(return_atomic_kvp=False)
+        key_value_pairs = {
+            "expandable_key": "sub_key1=sub_value1,sub_key2=sub_value2",
+            "unexpandable_key": "no:match:here",
+        }
+        result = kvpexpander.expand_key_value_pairs(key_value_pairs)
+        expected = {
+            "expandable_key_sub_key1": "sub_value1",
+            "expandable_key_sub_key2": "sub_value2",
+        }
         self.assertEqual(result, expected)
 
 
@@ -64,12 +91,12 @@ class TestRecursiveKVPExpander(unittest.TestCase):
 
     def test_expand_key_value_pair_with_no_match(self):
         result = self.kvpexpander.expand_key_value_pair(self.key, "sub_key3:sub_value3")
-        expected = {}
+        expected = {self.key: "sub_key3:sub_value3"}
         self.assertEqual(result, expected)
 
     def test_expand_key_value_pair_with_non_string_value(self):
         result = self.kvpexpander.expand_key_value_pair(self.key, 123)
-        expected = {}
+        expected = {self.key: 123}
         self.assertEqual(result, expected)
 
     def test_expand_key_value_pairs(self):
@@ -79,4 +106,59 @@ class TestRecursiveKVPExpander(unittest.TestCase):
             "test_key_sub_key1_sub_sub_key2": "sub_sub_value2",
             "test_key_sub_key2": "sub_value2",
         }
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pairs_with_return_atomic_kvp_false(self):
+        delimiters = [";", ","]
+        delimited_parser_config = parsers.delimited_parser.DelimitedParserConfig(
+            delimiters=delimiters
+        )
+        delimited_parser = parsers.delimited_parser.build(delimited_parser_config)
+        kvpexpander = kvpexpand.KVPExpander(
+            parser_chain=(delimited_parser,),
+            recursive=True,
+            return_atomic_kvp=False,
+        )
+        key_value_pairs = {
+            "expandable_key": "sub_key1=sub_sub_key1=sub_sub_value1,sub_sub_key2=sub_sub_value2;sub_key2=sub_value2",  # noqa: E501
+            "unexpandable_key": "no:match:here",
+        }
+        result = kvpexpander.expand_key_value_pairs(key_value_pairs)
+        expected = {
+            "expandable_key_sub_key1_sub_sub_key1": "sub_sub_value1",
+            "expandable_key_sub_key1_sub_sub_key2": "sub_sub_value2",
+            "expandable_key_sub_key2": "sub_value2",
+        }
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pair_with_return_atomic_kvp_false_and_no_match(self):
+        delimiters = [";", ","]
+        delimited_parser_config = parsers.delimited_parser.DelimitedParserConfig(
+            delimiters=delimiters
+        )
+        delimited_parser = parsers.delimited_parser.build(delimited_parser_config)
+        kvpexpander = kvpexpand.KVPExpander(
+            parser_chain=(delimited_parser,),
+            recursive=True,
+            return_atomic_kvp=False,
+        )
+        result = kvpexpander.expand_key_value_pair(self.key, "sub_key3:sub_value3")
+        expected = {}
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pair_with_return_atomic_kvp_false_and_non_string_value(
+        self,
+    ):
+        delimiters = [";", ","]
+        delimited_parser_config = parsers.delimited_parser.DelimitedParserConfig(
+            delimiters=delimiters
+        )
+        delimited_parser = parsers.delimited_parser.build(delimited_parser_config)
+        kvpexpander = kvpexpand.KVPExpander(
+            parser_chain=(delimited_parser,),
+            recursive=True,
+            return_atomic_kvp=False,
+        )
+        result = kvpexpander.expand_key_value_pair(self.key, 123)
+        expected = {}
         self.assertEqual(result, expected)
