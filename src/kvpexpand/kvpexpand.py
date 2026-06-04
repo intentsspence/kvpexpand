@@ -10,12 +10,14 @@ class KVPExpander:
         scalar_parser: _types.ScalarParser = scalar_parser.build(),
         recursive: bool = False,
         return_atomic_kvp: bool = True,
+        return_original_kvp: bool = False,
     ):
         self.parser_chain: tuple[_types.ValueParser, ...] = parser_chain
         self.key_generator: _types.KeyGenerator = key_generator
         self.scalar_parser: _types.ScalarParser = scalar_parser
         self.recursive: bool = recursive
         self.return_atomic_kvp: bool = return_atomic_kvp
+        self.return_original_kvp: bool = return_original_kvp
 
     def expand_key_value_pairs(
         self, mapping: dict[str, object]
@@ -28,6 +30,16 @@ class KVPExpander:
     def expand_key_value_pair(
         self, original_key: str, original_value: object
     ) -> _types.ExpandedPairs:
+        expanded = self._expand(original_key, original_value)
+
+        if self.return_original_kvp:
+            expanded[original_key] = original_value
+
+        return expanded
+
+    def _expand(
+        self, original_key: str, original_value: object
+    ) -> _types.ExpandedPairs:
         parsed = self._run_parser_chain(original_value)
         if parsed is None:
             if self.return_atomic_kvp:
@@ -38,11 +50,12 @@ class KVPExpander:
         for child_key, child_value in parsed.items():
             expanded_key = self.key_generator(original_key, child_key)
             if self.recursive:
-                nested = self.expand_key_value_pair(expanded_key, child_value)
+                nested = self._expand(expanded_key, child_value)
                 if nested:
                     expanded.update(nested)
                     continue
             expanded[expanded_key] = self.scalar_parser(child_value)
+
         return expanded
 
     def _run_parser_chain(self, original_value: object) -> _types.ParsedPairs | None:
