@@ -30,7 +30,14 @@ class KVPExpander:
     ) -> _types.ExpandedPairs:
         parsed = self._run_parser_chain(original_value)
         if parsed is None:
-            return {original_key: original_value} if self.return_atomic_kvp else {}
+            if self.return_atomic_kvp:
+                value = (
+                    self.scalar_parser(original_value)
+                    if isinstance(original_value, str)
+                    else original_value
+                )
+                return {original_key: value}
+            return {}
 
         expanded: _types.ExpandedPairs = {}
         for child_key, child_value in parsed.items():
