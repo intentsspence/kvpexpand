@@ -64,6 +64,45 @@ class TestKVPExpander(unittest.TestCase):
         }
         self.assertEqual(result, expected)
 
+    def test_expand_key_value_pair_with_return_original_kvp(self):
+        kvpexpander = kvpexpand.KVPExpander(return_original_kvp=True)
+        result = kvpexpander.expand_key_value_pair(self.key, self.value)
+        expected = {
+            "test_key": "sub_key1=sub_value1,sub_key2=sub_value2",
+            "test_key_sub_key1": "sub_value1",
+            "test_key_sub_key2": "sub_value2",
+        }
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pairs_with_return_original_kvp(self):
+        kvpexpander = kvpexpand.KVPExpander(return_original_kvp=True)
+        key_value_pairs = {
+            "expandable_key": "sub_key1=sub_value1,sub_key2=sub_value2",
+            "unexpandable_key": "no:match:here",
+        }
+        result = kvpexpander.expand_key_value_pairs(key_value_pairs)
+        expected = {
+            "expandable_key": "sub_key1=sub_value1,sub_key2=sub_value2",
+            "expandable_key_sub_key1": "sub_value1",
+            "expandable_key_sub_key2": "sub_value2",
+            "unexpandable_key": "no:match:here",
+        }
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pair_with_return_original_kvp_and_return_atomic_kvp_false(
+        self,
+    ):
+        kvpexpander = kvpexpand.KVPExpander(
+            return_original_kvp=True, return_atomic_kvp=False
+        )
+        result = kvpexpander.expand_key_value_pair(self.key, self.value)
+        expected = {
+            "test_key": "sub_key1=sub_value1,sub_key2=sub_value2",
+            "test_key_sub_key1": "sub_value1",
+            "test_key_sub_key2": "sub_value2",
+        }
+        self.assertEqual(result, expected)
+
 
 class TestRecursiveKVPExpander(unittest.TestCase):
     def setUp(self):
@@ -161,4 +200,49 @@ class TestRecursiveKVPExpander(unittest.TestCase):
         )
         result = kvpexpander.expand_key_value_pair(self.key, 123)
         expected = {}
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pair_with_return_original_kvp(self):
+        delimiters = [";", ","]
+        delimited_parser_config = parsers.delimited_parser.DelimitedParserConfig(
+            delimiters=delimiters
+        )
+        delimited_parser = parsers.delimited_parser.build(delimited_parser_config)
+        kvpexpander = kvpexpand.KVPExpander(
+            parser_chain=(delimited_parser,),
+            recursive=True,
+            return_original_kvp=True,
+        )
+        result = kvpexpander.expand_key_value_pair(self.key, self.value)
+        expected = {
+            "test_key": "sub_key1=sub_sub_key1=sub_sub_value1,sub_sub_key2=sub_sub_value2;sub_key2=sub_value2",  # noqa: E501
+            "test_key_sub_key1_sub_sub_key1": "sub_sub_value1",
+            "test_key_sub_key1_sub_sub_key2": "sub_sub_value2",
+            "test_key_sub_key2": "sub_value2",
+        }
+        self.assertEqual(result, expected)
+
+    def test_expand_key_value_pairs_with_return_original_kvp(self):
+        delimiters = [";", ","]
+        delimited_parser_config = parsers.delimited_parser.DelimitedParserConfig(
+            delimiters=delimiters
+        )
+        delimited_parser = parsers.delimited_parser.build(delimited_parser_config)
+        kvpexpander = kvpexpand.KVPExpander(
+            parser_chain=(delimited_parser,),
+            recursive=True,
+            return_original_kvp=True,
+        )
+        key_value_pairs = {
+            "expandable_key": "sub_key1=sub_sub_key1=sub_sub_value1,sub_sub_key2=sub_sub_value2;sub_key2=sub_value2",  # noqa: E501
+            "unexpandable_key": "no:match:here",
+        }
+        result = kvpexpander.expand_key_value_pairs(key_value_pairs)
+        expected = {
+            "expandable_key": "sub_key1=sub_sub_key1=sub_sub_value1,sub_sub_key2=sub_sub_value2;sub_key2=sub_value2",  # noqa: E501
+            "expandable_key_sub_key1_sub_sub_key1": "sub_sub_value1",
+            "expandable_key_sub_key1_sub_sub_key2": "sub_sub_value2",
+            "expandable_key_sub_key2": "sub_value2",
+            "unexpandable_key": "no:match:here",
+        }
         self.assertEqual(result, expected)

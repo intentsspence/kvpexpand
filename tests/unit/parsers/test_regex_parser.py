@@ -32,3 +32,7 @@ class TestRegexParserConfig(unittest.TestCase):
     def test_parse_non_matching_regex_string(self):
         result = self.parser("key1value1")
         self.assertEqual(result, None)
+
+    def test_parse_non_string_value(self):
+        result = self.parser(123)
+        self.assertEqual(result, None)
