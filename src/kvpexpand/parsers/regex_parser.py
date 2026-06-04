@@ -14,7 +14,10 @@ class RegexParserConfig:
 def build(config: RegexParserConfig = RegexParserConfig()) -> _types.ValueParser:
     pattern = re.compile(config.pattern)
 
-    def parser(raw_value: str) -> _types.ParsedPairs | None:
+    def parser(raw_value: object) -> _types.ParsedPairs | None:
+        if not isinstance(raw_value, str):
+            return None
+
         matches = list(pattern.finditer(raw_value))
         if not matches:
             return None

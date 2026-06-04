@@ -14,7 +14,10 @@ class ScalarParserConfig:
 
 
 def build(config: ScalarParserConfig = ScalarParserConfig()) -> _types.ScalarParser:
-    def parser(value: str) -> object:
+    def parser(value: object) -> object:
+        if not isinstance(value, str):
+            return value
+
         lowered = value.lower()
 
         # Check literal map first

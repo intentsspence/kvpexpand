@@ -15,7 +15,10 @@ def build(
     config: DelimitedParserConfig = DelimitedParserConfig(),
 ) -> _types.ValueParser:
 
-    def parser(raw_value: str) -> _types.ParsedPairs | None:
+    def parser(raw_value: object) -> _types.ParsedPairs | None:
+        if not isinstance(raw_value, str):
+            return None
+
         normalized = raw_value.strip()
         if config.trim_wrappers:
             for left, right in config.wrappers:
